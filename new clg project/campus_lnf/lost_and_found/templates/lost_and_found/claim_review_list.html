@@ -1,0 +1,26 @@
+{% extends 'lost_and_found/base.html' %}
+{% block title %}Review Claims — Campus Lost & Found{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><h3 class="fw-800 mb-0"><i class="bi bi-clipboard-check me-2"></i>Claim Review</h3><p class="text-muted mb-0">Review pending ownership requests.</p></div>
+  <a class="btn btn-outline-secondary" href="/admin/lost_and_found/claimrequest/"><i class="bi bi-gear me-1"></i>Admin</a>
+</div>
+{% if claims %}
+<div class="card border-0 shadow-sm rounded-4"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>Item</th><th>Claimant</th><th>Proof of ownership</th><th>Submitted</th><th class="text-end">Decision</th></tr></thead>
+  <tbody>{% for claim in claims %}<tr>
+    <td><a class="fw-600 text-decoration-none" href="{% url 'item_detail' claim.item.pk %}">{{ claim.item.title }}</a><div class="small text-muted">{{ claim.item.campus_location }}</div></td>
+    <td>{{ claim.requested_by.get_full_name|default:claim.requested_by.username }}<div class="small text-muted">{{ claim.requested_by.email }}</div></td>
+    <td class="small" style="min-width:220px">{{ claim.proof_description }}</td>
+    <td class="small text-muted">{{ claim.date_requested|date:"d M Y, g:i A" }}</td>
+    <td><div class="d-flex justify-content-end gap-2">
+      <form method="post" action="{% url 'claim_decision' claim.pk 'reject' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Reject</button></form>
+      <form method="post" action="{% url 'claim_decision' claim.pk 'approve' %}">{% csrf_token %}<button class="btn btn-sm btn-success" type="submit">Approve</button></form>
+    </div></td>
+  </tr>{% endfor %}</tbody>
+</table></div></div>
+{% else %}
+<div class="text-center text-muted py-5"><i class="bi bi-check2-circle display-4 d-block mb-2 text-success"></i><h5>No pending claims</h5><p class="mb-0">The review queue is clear.</p></div>
+{% endif %}
+{% endblock %}

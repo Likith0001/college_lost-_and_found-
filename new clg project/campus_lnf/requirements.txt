@@ -1,0 +1,5 @@
+Django>=5.2,<5.3
+Pillow>=10.0          # ImageField support
+psycopg[binary]>=3.1  # PostgreSQL driver for a shared hosted database
+django-mongodb-backend==5.2.*  # Official Django backend for MongoDB
+pywebpush>=2.0  # Optional Web Push delivery when VAPID keys are configured

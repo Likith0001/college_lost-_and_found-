@@ -1,0 +1,56 @@
+{% extends 'lost_and_found/base.html' %}
+{% block title %}Login — Campus Lost & Found{% endblock %}
+
+{% block content %}
+<div class="auth-card card p-4 p-md-5">
+  <div class="text-center mb-4">
+    <div class="mb-2" style="font-size:2.5rem; color:var(--clr-primary)">
+      <i class="bi bi-shield-lock-fill"></i>
+    </div>
+    <h2 class="fw-800">Welcome back</h2>
+    <p class="text-muted small">Sign in with your campus credentials.</p>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% for field in form %}
+    <div class="mb-3">
+      <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-{% if field.html_name == 'username' %}person{% else %}lock{% endif %}"></i>
+        </span>
+        {{ field }}
+      </div>
+      {% for error in field.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-portal w-100 py-2 mt-2">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Login
+    </button>
+  </form>
+
+  <p class="text-center small mt-3 mb-0">
+    New here? <a href="{% url 'signup' %}">Create an account</a>
+  </p>
+</div>
+
+{% block extra_js %}
+<script>
+  // Add Bootstrap 'form-control' class to login fields
+  document.querySelectorAll('#id_username, #id_password').forEach(el => {
+    el.classList.add('form-control');
+  });
+</script>
+{% endblock %}
+{% endblock %}

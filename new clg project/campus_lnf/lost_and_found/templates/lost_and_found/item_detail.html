@@ -1,0 +1,185 @@
+{% extends 'lost_and_found/base.html' %}
+{% block title %}{{ item.title }} — Campus Lost & Found{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+    <li class="breadcrumb-item active">{{ item.title }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+
+  <!-- ── Left: Item Info ─────────────────────────────────────────────── -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+      <!-- Image -->
+      {% if item.image %}
+        <img src="{{ item.image.url }}" class="card-img-top"
+             style="max-height:340px;object-fit:cover;" alt="{{ item.title }}" />
+      {% else %}
+        <div style="height:200px;background:linear-gradient(135deg,#e0e7ff,#ede9fe);
+                    display:flex;align-items:center;justify-content:center;font-size:5rem;
+                    color:var(--clr-primary);">
+          <i class="bi {{ item.category_icon }}"></i>
+        </div>
+      {% endif %}
+
+      <div class="card-body p-4">
+        <!-- Status / Category badges -->
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <span class="badge fs-6 bg-{{ item.status_badge_class }}">
+            {{ item.status }}
+          </span>
+          <span class="badge fs-6 bg-secondary bg-opacity-10 text-secondary border">
+            <i class="bi {{ item.category_icon }} me-1"></i>{{ item.category }}
+          </span>
+        </div>
+
+        <h2 class="fw-800 mb-3">{{ item.title }}</h2>
+        <p class="text-muted lh-lg">{{ item.description }}</p>
+
+        <hr />
+
+        <!-- Meta grid -->
+        <div class="row g-3 text-sm">
+          <div class="col-sm-6">
+            <div class="fw-600 text-muted small text-uppercase mb-1">Location</div>
+            <div><i class="bi bi-geo-alt-fill text-danger me-2"></i>{{ item.campus_location }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fw-600 text-muted small text-uppercase mb-1">Submitted</div>
+            <div><i class="bi bi-calendar3 me-2"></i>{{ item.submitted_at|date:"d F Y, g:i A" }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fw-600 text-muted small text-uppercase mb-1">Reported By</div>
+            <div><i class="bi bi-person-fill me-2"></i>
+              {{ item.reported_by.get_full_name|default:item.reported_by.username }}
+            </div>
+          </div>
+          {% if item.claimed_by %}
+          <div class="col-sm-6">
+            <div class="fw-600 text-muted small text-uppercase mb-1">Claimed By</div>
+            <div><i class="bi bi-person-check-fill text-success me-2"></i>
+              {{ item.claimed_by.get_full_name|default:item.claimed_by.username }}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Owner actions -->
+        {% if item.reported_by == user %}
+        <hr />
+        <div class="d-flex gap-3 flex-wrap align-items-center">
+          <a href="{% url 'item_edit' item.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Edit Item
+          </a>
+          {% if item.status != 'Claimed' and item.status != 'Returned' %}
+          <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash me-1"></i>Delete Report
+          </a>
+          {% endif %}
+          {% if status_form %}
+          <form method="post" class="d-flex align-items-center gap-2">
+            {% csrf_token %}
+            {{ status_form.status }}
+            <button type="submit" name="update_status"
+                    class="btn btn-sm btn-portal">
+              <i class="bi bi-arrow-repeat me-1"></i>Update Status
+            </button>
+          </form>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: Claim Panel ──────────────────────────────────────────── -->
+  <div class="col-lg-4">
+
+    <!-- Claim CTA (only for Found items, not owned by viewer) -->
+    {% if item.status == 'Found' and item.reported_by != user %}
+      {% if user_claimed %}
+        <div class="card border-0 shadow-sm rounded-4 mb-3">
+          <div class="card-body p-4 text-center">
+            <i class="bi bi-hourglass-split display-5 mb-3
+               {% if user_claimed.status == 'Approved' %}text-success
+               {% elif user_claimed.status == 'Rejected' %}text-danger
+               {% else %}text-warning{% endif %}"></i>
+            <h5 class="fw-700">Your Claim</h5>
+            <span class="badge fs-6
+              {% if user_claimed.status == 'Approved' %}bg-success
+              {% elif user_claimed.status == 'Rejected' %}bg-danger
+              {% else %}bg-warning text-dark{% endif %}">
+              {{ user_claimed.status }}
+            </span>
+            <p class="text-muted small mt-2">
+              Submitted on {{ user_claimed.date_requested|date:"d M Y" }}
+            </p>
+          </div>
+        </div>
+      {% else %}
+        <div class="card border-0 shadow-sm rounded-4 mb-3"
+             style="border-top:4px solid var(--clr-primary) !important;">
+          <div class="card-body p-4">
+            <h5 class="fw-700 mb-1">
+              <i class="bi bi-hand-index-thumb me-2"></i>Is this yours?
+            </h5>
+            <p class="text-muted small mb-3">
+              Submit a claim and campus authorities will verify it.
+            </p>
+            <a href="{% url 'claim_item' item.pk %}" class="btn btn-portal w-100">
+              <i class="bi bi-send me-2"></i>Submit a Claim
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <!-- Claim Requests (visible to item owner) -->
+    {% if item.reported_by == user and claims %}
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header border-0 bg-white pt-4 px-4">
+        <h6 class="fw-700 mb-0">
+          <i class="bi bi-people-fill me-2"></i>Claim Requests
+          <span class="badge bg-danger ms-1">{{ claims.count }}</span>
+        </h6>
+      </div>
+      <div class="card-body p-3">
+        {% for claim in claims %}
+        <div class="border rounded-3 p-3 mb-2">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <span class="fw-600 small">
+              {{ claim.requested_by.get_full_name|default:claim.requested_by.username }}
+            </span>
+            <span class="badge
+              {% if claim.status == 'Approved' %}bg-success
+              {% elif claim.status == 'Rejected' %}bg-danger
+              {% else %}bg-warning text-dark{% endif %}
+              badge-status">
+              {{ claim.status }}
+            </span>
+          </div>
+          <p class="small text-muted mb-1">{{ claim.proof_description|truncatechars:100 }}</p>
+          <div class="small text-muted">
+            <i class="bi bi-clock me-1"></i>{{ claim.date_requested|date:"d M Y" }}
+          </div>
+        </div>
+        {% endfor %}
+        <p class="small text-muted text-center mt-2 mb-0">
+          <i class="bi bi-info-circle me-1"></i>
+          Manage claims in the <a href="/admin/">Admin Panel</a>.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

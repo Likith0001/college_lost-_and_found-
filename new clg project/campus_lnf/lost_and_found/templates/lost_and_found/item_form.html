@@ -1,0 +1,94 @@
+{% extends 'lost_and_found/base.html' %}
+{% block title %}{{ title }} — Campus Lost & Found{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+      </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+      <!-- Card header -->
+      <div class="card-header border-0 py-3 px-4"
+           style="background:linear-gradient(135deg,var(--clr-primary),var(--clr-secondary));">
+        <h4 class="mb-0 text-white fw-700">
+          <i class="bi bi-{% if item %}pencil-square{% else %}plus-circle{% endif %} me-2"></i>
+          {{ title }}
+        </h4>
+      </div>
+
+      <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <!-- Title & Category -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="form-label">Item Title <span class="text-danger">*</span></label>
+              {{ form.title }}
+              {% for e in form.title.errors %}<div class="invalid-feedback d-block">{{e}}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Category <span class="text-danger">*</span></label>
+              {{ form.category }}
+              {% for e in form.category.errors %}<div class="invalid-feedback d-block">{{e}}</div>{% endfor %}
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label class="form-label">Description <span class="text-danger">*</span></label>
+            {{ form.description }}
+            <div class="form-text">Be specific — colour, size, brand, serial numbers help.</div>
+            {% for e in form.description.errors %}<div class="invalid-feedback d-block">{{e}}</div>{% endfor %}
+          </div>
+
+          <!-- Status & Location -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Status <span class="text-danger">*</span></label>
+              {{ form.status }}
+              {% for e in form.status.errors %}<div class="invalid-feedback d-block">{{e}}</div>{% endfor %}
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Campus Location <span class="text-danger">*</span></label>
+              {{ form.campus_location }}
+              {% for e in form.campus_location.errors %}<div class="invalid-feedback d-block">{{e}}</div>{% endfor %}
+            </div>
+          </div>
+
+          <!-- Image upload -->
+          <div class="mb-4">
+            <label class="form-label">Photo (optional)</label>
+            {% if item and item.image %}
+              <div class="mb-2">
+                <img src="{{ item.image.url }}" style="max-height:150px;border-radius:8px;" alt="current image" />
+                <p class="small text-muted mt-1">Current image – upload a new one to replace it.</p>
+              </div>
+            {% endif %}
+            <input type="file" name="image" accept="image/*" class="form-control">
+            <div class="form-text">JPG / PNG / WEBP — max 5 MB recommended.</div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-portal px-5 py-2">
+              <i class="bi bi-check-lg me-2"></i>
+              {% if item %}Save Changes{% else %}Submit Report{% endif %}
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary px-4 py-2">
+              Cancel
+            </a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends 'lost_and_found/base.html' %}
+
+{% block title %}Dashboard — Campus Lost & Found{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero Banner ───────────────────────────────────────────────────── -->
+<div class="portal-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+  <div>
+    <h1 class="fw-800 mb-1" style="font-size:2rem;">
+      <i class="bi bi-search-heart me-2"></i>Campus Lost &amp; Found
+    </h1>
+    <p class="mb-0 opacity-75">
+      Report what you lost, return what you found &mdash; all in one place.
+    </p>
+  </div>
+  <a href="{% url 'item_report' %}" class="btn btn-light fw-700 px-4 py-2 shadow-sm">
+    <i class="bi bi-plus-circle-fill me-2"></i>Report an Item
+  </a>
+</div>
+
+<!-- ── Stat Cards ────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="stat-card card" style="background:linear-gradient(135deg,#fee2e2,#fecaca);">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-number text-danger">{{ lost_count }}</div>
+          <div class="fw-600 text-danger-emphasis mt-1">Items Lost</div>
+        </div>
+        <i class="bi bi-exclamation-circle-fill stat-icon text-danger"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card card" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-number text-success">{{ found_count }}</div>
+          <div class="fw-600 text-success-emphasis mt-1">Items Found</div>
+        </div>
+        <i class="bi bi-check-circle-fill stat-icon text-success"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card card" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe);">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-number" style="color:var(--clr-primary)">{{ claimed_count }}</div>
+          <div class="fw-600 mt-1" style="color:#3730a3">Returned/Claimed</div>
+        </div>
+        <i class="bi bi-arrow-repeat stat-icon" style="color:var(--clr-primary)"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Search & Filter ────────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+  <div class="card-body p-3">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-12 col-md-5">
+        {{ filter_form.q.label_tag }}
+        {{ filter_form.q }}
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">Category</label>
+        {{ filter_form.category }}
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">Status</label>
+        {{ filter_form.status }}
+      </div>
+      <div class="col-12 col-md-3 d-flex gap-2">
+        <button class="btn btn-portal flex-fill" type="submit">
+          <i class="bi bi-funnel me-1"></i>Filter
+        </button>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary flex-fill">
+          <i class="bi bi-x-lg me-1"></i>Clear
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Item Grid ──────────────────────────────────────────────────────── -->
+{% if page_obj.object_list %}
+  <div class="row g-4">
+    {% for item in page_obj %}
+    <div class="col-sm-6 col-lg-4">
+      <div class="card item-card h-100">
+
+        <!-- Image / Placeholder -->
+        {% if item.image %}
+          <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" />
+        {% else %}
+          <div class="img-placeholder">
+            <i class="bi {{ item.category_icon }}"></i>
+          </div>
+        {% endif %}
+
+        <div class="card-body d-flex flex-column">
+          <!-- Badges row -->
+          <div class="d-flex gap-2 mb-2">
+            <span class="badge badge-status bg-{{ item.status_badge_class }}">
+              {{ item.status }}
+            </span>
+            <span class="badge badge-status bg-secondary bg-opacity-10 text-secondary border">
+              {{ item.category }}
+            </span>
+          </div>
+
+          <h6 class="card-title fw-700 mb-1">{{ item.title }}</h6>
+          <p class="card-text text-muted small flex-grow-1">
+            {{ item.description|truncatechars:90 }}
+          </p>
+
+          <!-- Meta -->
+          <div class="small text-muted mt-2 mb-3">
+            <i class="bi bi-geo-alt me-1"></i>{{ item.campus_location }}<br>
+            <i class="bi bi-clock me-1"></i>Submitted {{ item.submitted_at|date:"d M Y" }}
+            &nbsp;&bull;&nbsp;
+            <i class="bi bi-person me-1"></i>{{ item.reported_by.get_full_name|default:item.reported_by.username }}
+          </div>
+
+          <a href="{% url 'item_detail' item.pk %}"
+             class="btn btn-sm btn-portal w-100">
+            <i class="bi bi-arrow-right-circle me-1"></i>View Details
+          </a>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Pagination ── -->
+  {% if page_obj.has_other_pages %}
+  <nav class="mt-4 d-flex justify-content-center">
+    <ul class="pagination pagination-sm gap-1">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link rounded-3"
+             href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.previous_page_number }}">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link rounded-3"
+             href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link rounded-3"
+             href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.next_page_number }}">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+{% else %}
+  <!-- Empty state -->
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-inbox display-3 opacity-30 d-block mb-3"></i>
+    <h5 class="fw-600">No items found</h5>
+    <p>Try adjusting your filters or
+       <a href="{% url 'item_report' %}">report an item</a>.</p>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // A shared database can change when another student reports or updates an item.
+  // Check lightly in the background and refresh the grid only when it has changed.
+  let itemVersion = '{{ latest_update|escapejs }}';
+  window.setInterval(async () => {
+    try {
+      const response = await fetch('{% url "item_version" %}', {credentials: 'same-origin'});
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data.version !== itemVersion) window.location.reload();
+    } catch (_) {
+      // Keeping the current page is preferable to interrupting the user offline.
+    }
+  }, 15000);
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'lost_and_found/base.html' %}
+{% block title %}My Items — Campus Lost & Found{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="fw-800 mb-0">
+    <i class="bi bi-person-lines-fill me-2"></i>My Activity
+  </h3>
+  <a href="{% url 'item_report' %}" class="btn btn-portal">
+    <i class="bi bi-plus-circle me-2"></i>Report New Item
+  </a>
+</div>
+
+<!-- ── Items I Reported ── -->
+<h5 class="fw-700 mb-3 border-bottom pb-2">Items I Reported</h5>
+{% if reported %}
+<div class="row g-3 mb-5">
+  {% for item in reported %}
+  <div class="col-sm-6 col-lg-4">
+    <div class="card item-card h-100">
+      {% if item.image %}
+        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" />
+      {% else %}
+        <div class="img-placeholder">
+          <i class="bi {{ item.category_icon }}"></i>
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <div class="d-flex gap-2 mb-2">
+          <span class="badge bg-{{ item.status_badge_class }} badge-status">{{ item.status }}</span>
+          <span class="badge bg-secondary bg-opacity-10 text-secondary border badge-status">{{ item.category }}</span>
+        </div>
+        <h6 class="fw-700">{{ item.title }}</h6>
+        <p class="small text-muted mb-3">
+          <i class="bi bi-geo-alt me-1"></i>{{ item.campus_location }}<br>
+          <i class="bi bi-clock me-1"></i>Submitted {{ item.submitted_at|date:"d M Y" }}
+        </p>
+        <div class="d-flex gap-2">
+          <a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-portal flex-fill">
+            View
+          </a>
+          <a href="{% url 'item_edit' item.pk %}" class="btn btn-sm btn-outline-secondary flex-fill">
+            Edit
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-4 mb-5">
+  <i class="bi bi-inbox display-4 d-block opacity-25 mb-2"></i>
+  You haven't reported any items yet.
+</div>
+{% endif %}
+
+<!-- ── My Claim Requests ── -->
+<h5 class="fw-700 mb-3 border-bottom pb-2">My Claim Requests</h5>
+{% if claims %}
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Item</th>
+        <th>Location</th>
+        <th>Submitted</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for claim in claims %}
+      <tr>
+        <td class="fw-600">{{ claim.item.title }}</td>
+        <td class="text-muted small">{{ claim.item.campus_location }}</td>
+        <td class="text-muted small">{{ claim.date_requested|date:"d M Y" }}</td>
+        <td>
+          <span class="badge badge-status
+            {% if claim.status == 'Approved' %}bg-success
+            {% elif claim.status == 'Rejected' %}bg-danger
+            {% else %}bg-warning text-dark{% endif %}">
+            {{ claim.status }}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'item_detail' claim.item.pk %}"
+             class="btn btn-sm btn-outline-primary">View Item</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="text-center text-muted py-4">
+  <i class="bi bi-file-earmark-x display-4 d-block opacity-25 mb-2"></i>
+  You haven't submitted any claims yet.
+  <a href="{% url 'dashboard' %}">Browse found items</a>.
+</div>
+{% endif %}
+
+{% endblock %}

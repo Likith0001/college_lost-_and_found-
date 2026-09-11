@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Campus Lost & Found Portal{% endblock %}</title>
+
+  <!-- Bootstrap 5 -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+  <style>
+    :root {
+      --clr-primary: #4f46e5;
+      --clr-secondary: #7c3aed;
+      --clr-accent: #06b6d4;
+    }
+
+    body { background: #f8f9fc; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    /* ── Navbar ── */
+    .navbar-brand {
+      font-weight: 800;
+      font-size: 1.3rem;
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .navbar { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+
+    /* ── Cards ── */
+    .item-card {
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      transition: transform .2s, box-shadow .2s;
+      overflow: hidden;
+    }
+    .item-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.13);
+    }
+    .item-card .card-img-top {
+      height: 180px;
+      object-fit: cover;
+      background: #e9ecef;
+    }
+    .item-card .img-placeholder {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+      color: var(--clr-primary);
+    }
+
+    /* ── Stat Cards ── */
+    .stat-card {
+      border-radius: 16px;
+      border: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      padding: 1.4rem 1.6rem;
+    }
+    .stat-card .stat-icon {
+      font-size: 2.2rem;
+      opacity: .8;
+    }
+    .stat-card .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    /* ── Buttons ── */
+    .btn-portal {
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-secondary));
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .btn-portal:hover { opacity: .9; color: #fff; }
+
+    /* ── Badges ── */
+    .badge-status { font-size: .78rem; padding: .35em .7em; border-radius: 6px; }
+
+    /* ── Forms ── */
+    .auth-card {
+      max-width: 500px;
+      margin: 60px auto;
+      border: none;
+      border-radius: 18px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    }
+    .form-label { font-weight: 600; font-size: .9rem; color: #374151; }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--clr-primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+    }
+
+    /* ── Hero banner ── */
+    .portal-hero {
+      background: linear-gradient(135deg, var(--clr-primary) 0%, var(--clr-secondary) 60%, var(--clr-accent) 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── Toast container ── */
+    .toast-container { z-index: 1100; }
+
+    /* ── Footer ── */
+    footer { font-size: .85rem; color: #6b7280; }
+
+    /* Compact layouts for phones and tablets. */
+    @media (max-width: 991.98px) {
+      .navbar .container { padding-inline: 1rem; }
+      .navbar-nav { gap: .25rem; }
+      .navbar-collapse { padding-block: .75rem; }
+      .navbar .dropdown-menu { border: 0; box-shadow: none; }
+    }
+    @media (max-width: 767.98px) {
+      main.container { padding: 1rem; }
+      .portal-hero { padding: 1.5rem 1.25rem; }
+      .portal-hero h1 { font-size: 1.5rem !important; }
+      .portal-hero .btn { width: 100%; }
+      .stat-card { padding: 1rem 1.15rem; }
+      .stat-card .stat-number { font-size: 2rem; }
+      .auth-card { margin: 1.5rem auto; }
+      .item-card .card-img-top, .item-card .img-placeholder { height: 150px; }
+    }
+    @media (max-width: 575.98px) {
+      .navbar-brand { font-size: 1.1rem; }
+      .portal-hero { border-radius: 12px; }
+      .card-body { padding: 1rem !important; }
+      .btn { min-height: 42px; }
+      .pagination { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Navbar ─────────────────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg bg-white sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'dashboard' %}">
+      <i class="bi bi-search-heart-fill me-1"></i>Campus L&amp;F
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'dashboard' %}">
+            <i class="bi bi-grid me-1"></i>Dashboard
+          </a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'item_report' %}">
+            <i class="bi bi-plus-circle me-1"></i>Report Item
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'my_items' %}">
+            <i class="bi bi-person-lines-fill me-1"></i>My Items
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+
+      <ul class="navbar-nav align-items-center gap-2">
+        {% if user.is_authenticated %}
+          {% if vapid_public_key %}
+          <li class="nav-item">
+            <button class="btn btn-outline-primary btn-sm" id="enable-notifications" type="button">
+              <i class="bi bi-bell me-1"></i>Enable notifications
+            </button>
+          </li>
+          {% endif %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+               href="#" data-bs-toggle="dropdown">
+              <span class="rounded-circle bg-indigo-100 d-inline-flex align-items-center
+                           justify-content-center"
+                    style="width:32px;height:32px;background:#ede9fe;">
+                <i class="bi bi-person-fill" style="color:var(--clr-primary)"></i>
+              </span>
+              <span class="fw-600">{{ user.first_name|default:user.username }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+              <li><span class="dropdown-item-text text-muted small">{{ user.email }}</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item" href="{% url 'profile' %}">
+                  <i class="bi bi-person-gear me-2"></i>My Profile
+                </a>
+              </li>
+              {% if user.is_staff %}
+              <li>
+                <a class="dropdown-item" href="/admin/">
+                  <i class="bi bi-shield-lock me-2"></i>Admin Panel
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'claim_review_list' %}">
+                  <i class="bi bi-clipboard-check me-2"></i>Review Claims
+                </a>
+              </li>
+              {% endif %}
+              <li>
+                <form method="post" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button class="dropdown-item text-danger" type="submit">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'login' %}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-portal btn-sm" href="{% url 'signup' %}">Sign Up</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Toast Messages ─────────────────────────────────────────────────── -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  {% for message in messages %}
+  <div class="toast align-items-center border-0 text-bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} show"
+       role="alert" data-bs-delay="4000" data-bs-autohide="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}x-circle{% else %}info-circle{% endif %} me-2"></i>
+        {{ message }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto"
+              data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- ── Main Content ───────────────────────────────────────────────────── -->
+<main class="container py-4">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── Footer ────────────────────────────────────────────────────────── -->
+<footer class="text-center py-4 border-top mt-4">
+  <p class="mb-0">
+    <i class="bi bi-search-heart me-1"></i>
+    Campus Lost &amp; Found Portal &mdash; Built with ❤️ for college students
+  </p>
+</footer>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Auto-initialise all toasts
+  document.querySelectorAll('.toast').forEach(el => new bootstrap.Toast(el).show());
+</script>
+{% block extra_js %}{% endblock %}
+{% if user.is_authenticated and vapid_public_key %}
+<script>
+  const notificationButton = document.getElementById('enable-notifications');
+  const vapidPublicKey = '{{ vapid_public_key|escapejs }}';
+
+  function decodeVapidKey(key) {
+    const padding = '='.repeat((4 - key.length % 4) % 4);
+    const raw = atob((key + padding).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(raw, character => character.charCodeAt(0));
+  }
+
+  notificationButton?.addEventListener('click', async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      notificationButton.textContent = 'Notifications unavailable';
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+    const registration = await navigator.serviceWorker.register('{% url "service_worker" %}');
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: decodeVapidKey(vapidPublicKey),
+    });
+    const response = await fetch('{% url "device_subscription" %}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify(subscription.toJSON()),
+    });
+    if (response.ok) notificationButton.textContent = 'Notifications enabled';
+  });
+</script>
+{% endif %}
+</body>
+</html>
